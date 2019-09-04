@@ -13,6 +13,7 @@ export function hasClass(dom, className) {
     return reg.test(dom.className)
 }
 
+// 获取html标签中的dataset
 export function getData(el, name, val) {
     const prefix = 'data-'
     if (val) {

@@ -24,6 +24,7 @@ export default new Router({
       component: Singer,
       children: [
         {
+          // 根据id不同动态加载路游
           path: ':id',
           component: SingerDetail
         }
