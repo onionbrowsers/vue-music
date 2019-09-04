@@ -5,6 +5,7 @@
 </template>
 
 <script>
+// vuex获取vuex中state对象中的数据的语法糖
 import {mapGetters} from 'vuex'
 
 export default {
@@ -12,6 +13,7 @@ export default {
         console.log(this.singer)
     },
     computed: {
+        // 扩展运算符写法，获取数据传参为数组
         ...mapGetters([
             'singer'
         ])

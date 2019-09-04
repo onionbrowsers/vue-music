@@ -11,6 +11,7 @@ import {getSingerList} from '@/api/singer'
 import {ERR_OK} from '@/api/config'
 import Singer from 'common/js/singer'
 import listview from '@/base/listview/listview'
+// 调用mutations中的方法的语法糖，否则需要使用，store.mutation等链式调用（需要取看vuex文档）
 import {mapMutations} from 'vuex'
 
 const hotName = '热门'
@@ -30,12 +31,15 @@ export default {
         listview
     },
     methods: {
+        // 触发自定义事件后，将singer.id作为url跳转到歌手详情页页面
         selectSinger(singer) {
             this.$router.push({
                 path: `/singer/${singer.id}`
             })
+            // 根据vuex中mutation中的方法使用
             this.setSinger(singer)
         },
+        // 同为扩展运算符，不一样的为参数为对象，是因为挂载函数到自定义的属性上面，以便于用来调用函数
         ...mapMutations({
             setSinger: 'SET_SINGER'
         }),

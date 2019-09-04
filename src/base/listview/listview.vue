@@ -132,6 +132,7 @@ export default {
         Loading
     },
     methods: {
+        // 用来触发自定义事件将所点击的歌手数据传给父级
         selectItem(item) {
             this.$emit('select', item)
         },
