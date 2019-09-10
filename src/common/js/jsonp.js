@@ -4,7 +4,6 @@ import originJSONP from 'jsonp'
 export default function jsonp(url, data, option) {
     // 判断url是否已经带有?
     url += (url.indexOf('?') < 0 ? '?' : '&') + param(data)
-    console.log(url)
     return new Promise((resolve, reject) => {
         originJSONP(url, option, (err, data) => {
             if (!err) {
