@@ -22,3 +22,36 @@ export function getData(el, name, val) {
         return el.dataset[name]
     }
 }
+
+// 在js中写css3是没有postcss帮忙添加浏览器前缀的，所以自己手写封装
+let elementStyle = document.createElement('div').style
+
+let vendor = (() => {
+    let transformNames = {
+        webkit: 'webkitTransform',
+        Moz: 'MozTransform',
+        O: 'OTransform',
+        ms: 'msTransform',
+        standard: 'transform'
+    }
+
+    // 判断用有该css属性div在哪一个浏览器内, 重点为了返回浏览器前缀
+    for (let key in transformNames) {
+        if (elementStyle[transformNames[key]] !== undefined) {
+            return key
+        }
+    }
+
+    return false
+})()
+
+// 该函数调用后给某一元素添加对应的css属性
+export function prefixStyle(style) {
+    if (vendor === false) {
+        return false
+    }
+    if (vendor === 'standard') {
+        return style
+    }
+    return vendor + style.charAt(0).toUpperCase() + style.substr(1)
+}

@@ -1,8 +1,15 @@
 // state对象即为存储所有变量的对象
-const state = {
-    singer: {
 
-    }
+import {playMode} from 'common/js/config'
+const state = {
+    singer: {},
+    playing: false,
+    fullScreen: false,
+    // 两个list是因为判断是什么模式展示什么list
+    playList: [],
+    sequenceList: [],
+    mode: playMode.sequence,
+    currentIndex: -1
 }
 
 export default state

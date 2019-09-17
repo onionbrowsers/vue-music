@@ -11,7 +11,7 @@ Vue.use(Vuex)
 // 用来判断是否为开发环境
 const debug = process.env.NODE_ENV !== 'production'
 
-// 导出vuex.store
+// 导出vuex.store 更多信息看vuex笔记
 export default new Vuex.Store({
     actions,
     getters,

@@ -1,7 +1,5 @@
 <template>
-    <div class="singer-detail">
-
-    </div>
+    <music-list :songs='songs' :title="title" :bgImage='bgImage' ></music-list>
 </template>
 
 <script>
@@ -10,8 +8,12 @@ import {mapGetters} from 'vuex'
 import {getSingerDetail} from '@/api/singer'
 import {ERR_OK} from '@/api/config'
 import { createSong, isValidMusic, processSongsUrl } from '@/common/js/song'
+import MusicList from '@/components/music-list/music-list'
 
 export default {
+    components: {
+        MusicList
+    },
     data() {
         return {
             songs: []
@@ -24,7 +26,13 @@ export default {
         // 扩展运算符写法，获取数据传参为数组
         ...mapGetters([
             'singer'
-        ])
+        ]),
+        title() {
+            return this.singer.name
+        },
+        bgImage() {
+            return this.singer.avatar
+        }
     },
     methods: {
         _getDetail() {
@@ -61,14 +69,4 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-    @import "~common/stylus/variable";
-
-    .singer-detail
-        position fixed
-        z-index 100
-        top 0
-        left 0
-        bottom 0
-        right 0
-        background-color $color-background
 </style>
