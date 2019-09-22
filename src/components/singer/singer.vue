@@ -1,6 +1,6 @@
 <template>
-    <div class="singer">
-        <listview @select="selectSinger" :data='singers'></listview>
+    <div class="singer" ref="singer">
+        <listview @select="selectSinger" :data='singers' ref="list"></listview>
         <transition name="slide">
             <router-view></router-view>
         </transition>
@@ -13,12 +13,14 @@ import Singer from 'common/js/singer'
 import listview from '@/base/listview/listview'
 // 调用mutations中的方法的语法糖，否则需要使用，store.mutation等链式调用（需要取看vuex文档）
 import {mapMutations} from 'vuex'
+import {playlistMixin} from 'common/js/mixin'
 
 const hotName = '热门'
 // 热门歌手个数
 const hotSingerLength = 10
 
 export default {
+    mixins: [playlistMixin],
     created() {
         this._getSingerList()
     },
@@ -31,6 +33,12 @@ export default {
         listview
     },
     methods: {
+        // 覆盖mixin的handlePlaylist，显示最下方dom
+        handlePlaylist(playlist) {
+            const bottom = playlist.length > 0 ? '60px' : ''
+            this.$refs.singer.style.bottom = bottom
+            this.$refs.list.refresh()
+        },
         // 触发自定义事件后，将singer.id作为url跳转到歌手详情页页面
         selectSinger(singer) {
             this.$router.push({

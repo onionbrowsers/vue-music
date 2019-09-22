@@ -46,7 +46,6 @@ export default {
                     // 成功后，根据该函数，将已经创建好的song类返回给该函数内的getSongUrl接口去给每一个song类添加url
                     processSongsUrl(this._normalizeSongs(res.data.list)).then((songs) => {
                         this.songs = songs
-                        console.log(this.songs)
                     })
                 }
             })
@@ -61,7 +60,6 @@ export default {
                     ret.push(createSong(musicData))
                 }
             })
-            console.log(ret)
             return ret
         }
     }

@@ -1,6 +1,7 @@
 import { getSongsUrl } from '@/api/song'
 import { ERR_OK } from '@/api/config'
-// import { Base64 } from 'js-base64'
+import { getLyric } from '../../api/song'
+import { Base64 } from 'js-base64'
 
 // 包装一个song类，用来得到关于歌曲的id，名字，专辑名，歌曲url等
 export default class Song {
@@ -13,6 +14,24 @@ export default class Song {
         this.duration = duration
         this.image = image
         this.url = url
+    }
+
+    // 在song类上添加该方法来给song类添加歌词变量
+    getCurLyric() {
+        // 如果当前歌曲已有歌词变量情况下，不用再次调用接口，直接返回promise即可
+        if (this.lyric) {
+            return Promise.resolve(this.lyric)
+        }
+        return new Promise((resolve, reject) => {
+            getLyric(this.mid).then((res) => {
+                if (res.retcode === ERR_OK) {
+                    this.lyric = Base64.decode(res.lyric)
+                    resolve(this.lyric)
+                } else {
+                    reject(new Error('no lyric'))
+                }
+            })
+        })
     }
 }
 

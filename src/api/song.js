@@ -5,6 +5,27 @@ import { ERR_OK } from '@/api/config'
 
 const debug = process.env.NODE_ENV !== 'production'
 
+// 用axios获取歌词接口
+export function getLyric(mid) {
+    const url = debug ? '/api/lyric' : 'http://ustbhuangyi.com/music/api/lyric'
+
+    const data = Object.assign({}, commonParams, {
+        songmid: mid,
+        platform: 'yqq',
+        hostUin: 0,
+        needNewCode: 0,
+        categoryId: 10000000,
+        pcachetime: +new Date(),
+        format: 'json'
+    })
+
+    return axios.get(url, {
+        params: data
+    }).then(res => {
+        return Promise.resolve(res.data)
+    })
+}
+
 // 用来返回接口函数
 function genUrlMid(mids, types) {
     // 用来获取guid

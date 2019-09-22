@@ -7,7 +7,7 @@
         <h1 class="title" v-html="title"></h1>
         <div class="bg-image" :style="bgStyle" ref="bgImage">
             <div class="play-wrapper">
-                <div class="play" v-show="songs.length > 0" ref="play">
+                <div class="play" @click='random' v-show="songs.length > 0" ref="play">
                     <i class="icon-play"></i>
                     <span class="text">随机播放全部</span>
                 </div>
@@ -32,12 +32,15 @@ import songList from '@/base/song-list/song-list'
 import {prefixStyle} from 'common/js/dom'
 import loading from '@/base/loading/loading'
 import {mapActions} from 'vuex'
+import {playlistMixin} from 'common/js/mixin'
 
 // 设置歌曲滑动后留下的最小高度
 const RESERVED_HEIGHT = 40
 const transform = prefixStyle('transform')
 
 export default {
+    // 添加mixin
+    mixins: [playlistMixin],
     components: {
         scroll,
         songList,
@@ -122,6 +125,12 @@ export default {
         }
     },
     methods: {
+        // 覆盖mixin中的方法，来显示被挡住的dom
+        handlePlaylist(playlist) {
+            const bottom = playlist.length > 0 ? '60px' : ''
+            this.$refs.list.$el.style.bottom = bottom
+            this.$refs.list.refresh()
+        },
         scroll(pos) {
             this.scrollY = pos.y
         },
@@ -135,7 +144,11 @@ export default {
                 index: index
             })
         },
-        ...mapActions(['selectPlay'])
+        // 点击页面内的随机播放全部时触发action，改变多个mutataions，播放且得到随机数组
+        random() {
+            this.randomPlay({list: this.songs})
+        },
+        ...mapActions(['selectPlay', 'randomPlay'])
     }
 }
 </script>

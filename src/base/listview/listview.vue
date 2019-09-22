@@ -132,6 +132,10 @@ export default {
         Loading
     },
     methods: {
+        // 给父组件暴露better-scroll方法
+        refresh() {
+            this.$refs.listview.refresh()
+        },
         // 用来触发自定义事件将所点击的歌手数据传给父级
         selectItem(item) {
             this.$emit('select', item)

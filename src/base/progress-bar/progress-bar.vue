@@ -46,7 +46,11 @@ export default {
     methods: {
         // 点击进度条的事件
         progressClick(e) {
-            this._offset(e.offsetX)
+            // getBoundingClientRect用来获取dom到屏幕上下左右四个方位的值
+            const rect = this.$refs.progressBar.getBoundingClientRect()
+            // 获取点击的x值减去进度条到左侧的距离和按钮的一半位置
+            const offsetWidth = e.pageX - rect.left - progressBtnWidth / 2
+            this._offset(offsetWidth)
             this._triggerPercent()
         },
         progressTouchStart(e) {
