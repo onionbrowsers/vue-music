@@ -15,7 +15,7 @@
                 <div class="recommend-list">
                     <h1 class="list-title">热门歌单推荐</h1>
                     <ul>
-                        <li class="item" v-for="item in discList.list" :key="item.dissid">
+                        <li @click="selectItem(item)" class="item" v-for="item in discList.list" :key="item.dissid">
                             <div class="icon">
                                 <img v-lazy="item.imgurl" alt="" width="60" height="60">
                             </div>
@@ -31,6 +31,7 @@
                 <loading></loading>
             </div>
         </scroll>
+        <router-view></router-view>
     </div>
 </template>
 <script>
@@ -41,6 +42,7 @@ import slider from '@/base/slider/slider'
 import scroll from '@/base/scroll/scroll'
 import loading from '@/base/loading/loading'
 import {playlistMixin} from 'common/js/mixin'
+import {mapMutations} from 'vuex'
 
 export default {
     mixins: [playlistMixin],
@@ -55,6 +57,13 @@ export default {
         this._getDiscList()
     },
     methods: {
+        // 将点击的某个歌单用mutations传到getters中
+        selectItem(item) {
+            this.setDisc(item)
+            this.$router.push({
+                path: `/recommend/${item.dissid}`
+            })
+        },
         // 覆盖mixin的handlePlaylist，显示最下方dom
         handlePlaylist(playlist) {
             const bottom = playlist.length > 0 ? '60px' : ''
@@ -70,10 +79,8 @@ export default {
         },
         _getDiscList() {
             getDiscList().then(res => {
-                console.log(res)
                 if (res.code === ERR_OK) {
                     this.discList = res.data
-                    console.log(this.discList)
                 }
             })
         },
@@ -84,7 +91,10 @@ export default {
                 this.$refs.scroll.refresh()
                 this.checkLoaded = true
             }
-        }
+        },
+        ...mapMutations({
+            'setDisc': 'SET_DISC'
+        })
     },
     components: {
         slider,
