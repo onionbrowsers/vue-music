@@ -3,6 +3,9 @@
     <div class="song-list">
         <ul>
             <li @click="selectItem(song, index)" v-for="(song,index) in songs" :key="index" class="item">
+                <div class="rank" v-show="rank">
+                    <span :class="getRankCls(index)">{{getRankText(index)}}</span>
+                </div>
                 <div class="content">
                     <h2 class="name">{{song.name}}</h2>
                     <p class="desc" v-text="getDesc(song)"></p>
@@ -21,6 +24,11 @@ export default {
             default() {
                 return []
             }
+        },
+        // 是否展示歌单索引，针对排行榜
+        rank: {
+            type: Boolean,
+            default: false
         }
     },
     methods: {
@@ -30,6 +38,22 @@ export default {
         },
         getDesc(song) {
             return `${song.singer} - ${song.album}`
+        },
+        // 根据是否有rank来给标签动态添加类名
+        getRankCls(index) {
+            // 判断是否为前三，前三为icon
+            if (index <= 2) {
+                return `icon icon${index}`
+            } else {
+                return 'text'
+            }
+        },
+        // 同上
+        getRankText(index) {
+            // 大于前三的话，展示索引
+            if (index > 2) {
+                return index + 1
+            }
         }
     }
 }
@@ -46,6 +70,25 @@ export default {
         box-sizing border-box
         height 64px
         font-size $font-size-medium
+        .rank
+            flex 0 0 25px
+            width 25px
+            margin-right 30px
+            text-align center
+            .icon
+                display inline-block
+                width 25px
+                height 24px
+                background-size 25px 24px
+                &.icon0
+                    bg-image('first')
+                &.icon1
+                    bg-image('second')
+                &.icon2
+                    bg-image('third')
+            .text
+                color $color-t
+                font-size $font-size-large
         .content
             flex 1
             line-height 20px

@@ -95,7 +95,7 @@ export function getSongsUrl(songs) {
             })
         }
 
-        // 请求多次去判断是否有盖歌曲url
+        // 请求多次去判断是否有该歌曲url
         function retry() {
             if (--tryTime >= 0) {
                 request()

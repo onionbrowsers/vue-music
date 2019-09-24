@@ -45,7 +45,11 @@ export default {
                 if (res.code === ERR_OK) {
                     // 成功后，根据该函数，将已经创建好的song类返回给该函数内的getSongUrl接口去给每一个song类添加url
                     processSongsUrl(this._normalizeSongs(res.data.list)).then((songs) => {
-                        this.songs = songs
+                        if (typeof songs === 'string') {
+                            this.songs = []
+                        } else {
+                            this.songs = songs
+                        }
                     })
                 }
             })

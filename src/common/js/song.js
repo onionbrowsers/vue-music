@@ -82,5 +82,8 @@ export function processSongsUrl(songs) {
             })
         }
         return songs
+    }).catch(e => {
+        // 用来显示没有歌曲情况下的数据,还没写完
+        return '暂无歌曲数据'
     })
 }

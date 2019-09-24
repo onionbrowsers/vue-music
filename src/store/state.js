@@ -11,7 +11,9 @@ const state = {
     mode: playMode.sequence,
     currentIndex: -1,
     // 添加推荐详情歌单
-    disc: {}
+    disc: {},
+    // 添加排行榜歌单
+    topList: {}
 }
 
 export default state
