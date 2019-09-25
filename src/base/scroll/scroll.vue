@@ -22,6 +22,11 @@ export default {
         listenScroll: {
             type: Boolean,
             default: false
+        },
+        // 是否有上拉加载
+        pullup: {
+            type: Boolean,
+            default: false
         }
     },
     mounted() {
@@ -43,6 +48,16 @@ export default {
                 let me = this
                 this.scroll.on('scroll', (pos) => {
                     me.$emit('scroll', pos)
+                })
+            }
+            // 判断是否上来加载
+            if (this.pullup) {
+                // 监听滑动结束事件
+                this.scroll.on('scrollEnd', () => {
+                    // 因为是负值，所以如果滑动距离小于底部上面50距离即可判定到达底部，派发到达底部事件
+                    if (this.scroll.y <= this.scroll.maxScrollY + 50) {
+                        this.$emit('scrollToEnd')
+                    }
                 })
             }
         },

@@ -83,6 +83,53 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           console.log(e)
         })
       })
+      // 获取推荐详情歌曲接口
+      app.get('/api/getCdInfo', function (req, res) {
+        console.log(req.query)
+        const url = 'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg'
+        axios.get(url, {
+          headers: {
+            referer: 'https://c.y.qq.com/',
+            host: 'c.y.qq.com'
+          },
+          params: req.query
+        }).then((response) => {
+          let ret = response.data
+          if (typeof ret === 'string') {
+            const reg = /^\w+\(({.+})\)$/
+            const matches = ret.match(reg)
+            if (matches) {
+              ret = JSON.parse(matches[1])
+            }
+          }
+          res.json(ret)
+        }).catch((e) => {
+          console.log(e)
+        })
+      })
+      // 获取搜索详情接口
+      app.get('/api/search', function(req, res) {
+        var url = 'https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp'
+        axios.get(url, {
+            headers: {
+                referer: 'https://c.y.qq.com/',
+                host: 'c.y.qq.com'
+            },
+            params: req.query
+        }).then((response) => {
+            let ret = response.data
+            if (typeof ret === 'string') {
+              const reg = /^\w+\(({.+})\)$/
+              const matches = ret.match(reg)
+              if (matches) {
+                ret = JSON.parse(matches[1])
+              }
+            }
+            res.json(ret)
+        }).catch((e) => {
+            console.log(e)
+        })
+      })
     },
     clientLogLevel: 'warning',
     historyApiFallback: {

@@ -30,7 +30,7 @@ export default {
         }
     },
     created() {
-        // 还不清楚为什么这么写
+        // 监听query值，当query改变时，派发事件，且将输入值传出去
         this.$watch('query', (newQuery) => {
             this.$emit('query', newQuery)
         })
