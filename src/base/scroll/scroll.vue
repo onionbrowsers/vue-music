@@ -27,6 +27,11 @@ export default {
         pullup: {
             type: Boolean,
             default: false
+        },
+        // 当搜索结果展示后，监听滚动前事件，为了将移动端手机的键盘收起
+        beforeScroll: {
+            type: Boolean,
+            default: false
         }
     },
     mounted() {
@@ -58,6 +63,13 @@ export default {
                     if (this.scroll.y <= this.scroll.maxScrollY + 50) {
                         this.$emit('scrollToEnd')
                     }
+                })
+            }
+
+            // 当开始滚动前，派发给父组件事件
+            if (this.beforeScroll) {
+                this.scroll.on('beforeScollStart', () => {
+                    this.$emit('beforeScroll')
                 })
             }
         },

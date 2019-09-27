@@ -16,8 +16,9 @@
             </div>
         </div>
         <div class="search-result" v-show="query">
-            <suggest :query='query'></suggest>
+            <suggest @listScroll='blurInput' :query='query'></suggest>
         </div>
+        <router-view></router-view>
     </div>
 </template>
 <script>
@@ -56,6 +57,10 @@ export default {
         // 接受改变的query值，传给suggest组件，来调用接口
         onQueryChange(query) {
             this.query = query
+        },
+        // 当监听到子组件事件后，调用子组件方法，收起键盘
+        blurInput() {
+            this.$refs.searchBox.blur()
         }
     }
 }

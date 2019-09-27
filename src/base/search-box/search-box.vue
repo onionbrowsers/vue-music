@@ -2,12 +2,15 @@
     <!-- 搜索框组件 -->
     <div class="search-box">
         <i class="icon-search"></i>
-        <input v-model="query" :placeholder="placeholder" class="box">
+        <input ref="query" v-model="query" :placeholder="placeholder" class="box">
         <i @click="clearQuery" v-show="query" class="icon-dismiss"></i>
     </div>
 </template>
 
 <script>
+// 节流函数
+import {debounce} from 'common/js/util'
+
 export default {
     props: {
         placeholder: {
@@ -27,13 +30,17 @@ export default {
         },
         setQuery(query) {
             this.query = query
+        },
+        // 根据父组件的监听事件，来判断是否把手机键盘收起
+        blur() {
+            this.$refs.query.blur()
         }
     },
     created() {
-        // 监听query值，当query改变时，派发事件，且将输入值传出去
-        this.$watch('query', (newQuery) => {
+        // 监听query值，当query改变时，派发事件，且将输入值传出去, debounce节流函数，防止多次调用接口
+        this.$watch('query', debounce((newQuery) => {
             this.$emit('query', newQuery)
-        })
+        }, 200))
     }
 }
 </script>

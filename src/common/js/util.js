@@ -14,3 +14,17 @@ export function shuffle (arr) {
 function getRandomInt (min, max) {
     return (Math.random() * (max - min + 1) + min) | 0
 }
+
+// 节流函数
+export function debounce(func, delay) {
+    let timer
+    return function(...args) {
+        // 每次调用时清除上一个定时器，重新开启一个新的定时器
+        if (timer) {
+            clearTimeout(timer)
+        }
+        timer = setTimeout(() => {
+            func.apply(this, args)
+        }, delay)
+    }
+}

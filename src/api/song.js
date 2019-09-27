@@ -72,27 +72,27 @@ export function getSongsUrl(songs) {
         let tryTime = 3
 
         function request() {
-        return axios.post(url, {
-            comm: data,
-            url_mid: urlMid
-        }).then((response) => {
-                const res = response.data
-                if (res.code === ERR_OK) {
-                    let urlMid = res.url_mid
-                    if (urlMid && urlMid.code === ERR_OK) {
-                        const info = urlMid.data.midurlinfo[0]
-                        if (info && info.purl) {
-                            resolve(res)
+            return axios.post(url, {
+                comm: data,
+                url_mid: urlMid
+            }).then((response) => {
+                    const res = response.data
+                    if (res.code === ERR_OK) {
+                        let urlMid = res.url_mid
+                        if (urlMid && urlMid.code === ERR_OK) {
+                            const info = urlMid.data.midurlinfo[0]
+                            if (info && info.purl) {
+                                resolve(res)
+                            } else {
+                                retry()
+                            }
                         } else {
                             retry()
                         }
                     } else {
                         retry()
                     }
-                } else {
-                    retry()
-                }
-            })
+                })
         }
 
         // 请求多次去判断是否有该歌曲url

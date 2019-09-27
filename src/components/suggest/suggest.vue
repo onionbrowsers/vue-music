@@ -4,10 +4,12 @@
         class="suggest"
         :data='result'
         :pullup='pullup'
+        :beforeScroll='beforeScroll'
         @scrollToEnd='searchMore'
+        @beforeScroll='listScroll'
         ref="suggest">
         <ul class="suggest-list">
-            <li class="suggest-item" v-for="(item,index) in result" :key="index">
+            <li @click="selectItem(item)" class="suggest-item" v-for="(item,index) in result" :key="index">
                 <div class="icon">
                     <i :class="getIconCls(item)"></i>
                 </div>
@@ -17,22 +19,29 @@
             </li>
             <loading v-show="hasMore" title=""></loading>
         </ul>
+        <div v-show="!hasMore && !result.length" class="no-result-wrapper">
+            <no-result title="暂无搜索结果"></no-result>
+        </div>
     </scroll>
 </template>
 
 <script>
 import {search} from '@/api/search'
 import {ERR_OK} from '@/api/config'
-import { createSong, isValidMusic } from '@/common/js/song'
+import { createSong, isValidMusic, processSongsUrl } from '@/common/js/song'
 import scroll from '@/base/scroll/scroll'
 import loading from '@/base/loading/loading'
+import Singer from 'common/js/singer'
+import {mapMutations, mapActions} from 'vuex'
+import noResult from '@/base/no-result/no-result'
 
 const TYPE_SINGER = 'singer'
 
 export default {
     components: {
         scroll,
-        loading
+        loading,
+        noResult
     },
     props: {
         query: {
@@ -56,10 +65,28 @@ export default {
             result: [],
             pullup: true,
             // 是否还可以下拉刷新，是否达到搜索的最大值
-            hasMore: true
+            hasMore: true,
+            beforeScroll: true
         }
     },
     methods: {
+        // 监听滚动前事件
+        listScroll() {
+            this.$emit('listScroll')
+        },
+        // 当点击搜索后的歌曲时，如果是歌手，跳转到当前歌手页面，如果是歌曲插入到队列中
+        selectItem(item) {
+            this.$emit('listScroll')
+            if (item.type === TYPE_SINGER) {
+                const singer = new Singer(item.singermid, item.singername)
+                this.$router.push({
+                    path: `search/${singer.id}`
+                })
+                this.setSinger(singer)
+            } else {
+                this.insertSong(item)
+            }
+        },
         // 用来接收调用接口返回的数据
         search() {
             // 第一次调用初始化
@@ -68,18 +95,17 @@ export default {
             this.$refs.suggest.scrollTo(0, 0)
             search(this.query, this.page, this.showSinger, this.perpage).then(res => {
                 if (res.code === ERR_OK) {
-                    this.result = this._genResult(res.data)
-                    console.log(this.result)
+                    // 因为返回的数据没有歌曲url，所以需要去调用获取歌曲接口的函数
+                    this._genResult(res.data).then((result) => {
+                        result = result.filter(item => {
+                            return item !== '暂无歌曲数据'
+                        })
+                        if (typeof result[0] !== 'string') {
+                            this.result = result
+                        }
+                    })
                     // 用来判断是否已经加载了所有数据
-                    this._chcekMore(res.data)
-                    // processSongsUrl(this._genResult(res.data)).then(songs => {
-                    //     if (typeof songs === 'string') {
-                    //         this.result = []
-                    //     } else {
-                    //         this.result = songs
-                    //     }
-                    //     console.log(this.result)
-                    // })
+                    this._checkMore(res.data)
                 }
             })
         },
@@ -89,16 +115,11 @@ export default {
             this.page++
             search(this.query, this.page, this.showSinger, this.perpage).then(res => {
                 if (res.code === ERR_OK) {
-                    this.result = this.result.concat(this._genResult(res.data))
-                    this._chcekMore(res.data)
-                    // processSongsUrl(this._genResult(res.data)).then(songs => {
-                    //     if (typeof songs === 'string') {
-                    //         this.result = []
-                    //     } else {
-                    //         this.result = songs
-                    //     }
-                    //     console.log(this.result)
-                    // })
+                    // this.result = this.result.concat(this._genResult(res.data))
+                    this._genResult(res.data).then((result) => {
+                        this.result = this.result.concat(result)
+                    })
+                    this._checkMore(res.data)
                 }
             })
         },
@@ -119,7 +140,7 @@ export default {
             }
         },
         // 判断是否已加载所有数据
-        _chcekMore(data) {
+        _checkMore(data) {
             const song = data.song
             // 当list length为0时或者，当前页数和每页返回的歌曲数的值大于总数时，即没更多数据加载，将hasmore变false
             if (!song.list.length || (song.curnum + song.curpage * this.perpage) >= song.totalnum) {
@@ -132,10 +153,11 @@ export default {
             if (data.zhida && data.zhida.singerid) {
                 ret.push({...data.zhida, ...{type: TYPE_SINGER}})
             }
-            if (data.song) {
-                ret = ret.concat(this._normalizeSongs(data.song.list))
-            }
-            return ret
+            // 调用接口，获取歌曲的url
+            return processSongsUrl(this._normalizeSongs(data.song.list)).then((songs) => {
+                ret = ret.concat(songs)
+                return ret
+            })
         },
         _normalizeSongs(list) {
             let ret = []
@@ -146,7 +168,11 @@ export default {
                 }
             })
             return ret
-        }
+        },
+        ...mapMutations({
+            setSinger: 'SET_SINGER'
+        }),
+        ...mapActions(['insertSong'])
     },
     watch: {
         // 监听query改变调用search函数

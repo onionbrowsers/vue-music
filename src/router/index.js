@@ -52,7 +52,14 @@ export default new Router({
     },
     {
       path: '/search',
-      component: Search
+      component: Search,
+      children: [
+        {
+          // 根据id不同动态加载路由
+          path: ':id',
+          component: SingerDetail
+        }
+      ]
     }
   ]
 })
