@@ -13,30 +13,51 @@
                         </li>
                     </ul>
                 </div>
+                <!-- 历史数据列表展示 -->
+                <div class="search-history" v-show="searchHistory.length">
+                    <h1 class="title">
+                        <span class="text">搜索历史</span>
+                        <span class="clear" @click="showConfirm">
+                            <i class="icon-clear"></i>
+                        </span>
+                    </h1>
+                    <searchList @delete='deleteOne' @select='addQuery' :searches='searchHistory'></searchList>
+                </div>
             </div>
         </div>
         <div class="search-result" v-show="query">
-            <suggest @listScroll='blurInput' :query='query'></suggest>
+            <suggest @select="saveSearch" @listScroll='blurInput' :query='query'></suggest>
         </div>
+        <confirm @confirm='clearSearchHistory' ref="confirm" text='是否清空搜索历史记录'></confirm>
         <router-view></router-view>
     </div>
 </template>
 <script>
 import searchBox from '@/base/search-box/search-box'
+import confirm from '@/base/confirm/confirm'
+import searchList from '@/base/search-list/search-list'
 import suggest from '@/components/suggest/suggest'
 import {getHotKey} from '@/api/search'
 import {ERR_OK} from '@/api/config'
+import {mapActions, mapGetters} from 'vuex'
 
 export default {
     components: {
         searchBox,
-        suggest
+        suggest,
+        searchList,
+        confirm
     },
     data() {
         return {
             hotKey: [],
             query: ''
         }
+    },
+    computed: {
+        ...mapGetters([
+            'searchHistory'
+        ])
     },
     created() {
         this._getHotkey()
@@ -61,7 +82,18 @@ export default {
         // 当监听到子组件事件后，调用子组件方法，收起键盘
         blurInput() {
             this.$refs.searchBox.blur()
-        }
+        },
+        // 调用Action派发mutation来改变显示的数据
+        saveSearch() {
+            this.saveSearchHistory(this.query)
+        },
+        deleteOne(item) {
+            this.delectSearchHistory(item)
+        },
+        showConfirm() {
+            this.$refs.confirm.show()
+        },
+        ...mapActions(['saveSearchHistory', 'delectSearchHistory', 'clearSearchHistory'])
     }
 }
 </script>

@@ -1,5 +1,5 @@
 // state对象即为存储所有变量的对象
-
+import {localSearch} from 'common/js/cache'
 import {playMode} from 'common/js/config'
 const state = {
     singer: {},
@@ -13,7 +13,9 @@ const state = {
     // 添加推荐详情歌单
     disc: {},
     // 添加排行榜歌单
-    topList: {}
+    topList: {},
+    // 搜索历史数据
+    searchHistory: localSearch()
 }
 
 export default state

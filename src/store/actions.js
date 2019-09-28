@@ -1,6 +1,8 @@
 import * as types from './mutation-types'
 import {playMode} from 'common/js/config'
 import { shuffle } from '../common/js/util'
+import {saveSearch} from 'common/js/cache'
+import { deleteSearch, clearSearch } from '../common/js/cache'
 
 // 如之前所写，当改变列表的时候需要找到对应的当前歌曲的索引
 function findIndex(list, song) {
@@ -82,4 +84,16 @@ export const insertSong = function ({commit, state}, song) {
     commit(types.SET_CURRENT_INDEX, currentIndex)
     commit(types.SET_FULL_SCREEN, true)
     commit(types.SET_PLAYING_STATE, true)
+}
+
+export const saveSearchHistory = function ({commit}, query) {
+    commit(types.SET_SEARCH_HISTORY, saveSearch(query))
+}
+
+export const delectSearchHistory = function ({commit}, query) {
+    commit(types.SET_SEARCH_HISTORY, deleteSearch(query))
+}
+
+export const clearSearchHistory = function ({commit}) {
+    commit(types.SET_SEARCH_HISTORY, clearSearch())
 }

@@ -86,6 +86,8 @@ export default {
             } else {
                 this.insertSong(item)
             }
+            // 将选中的数据派发出去，供父组件使用或插入到历史记录中
+            this.$emit('select', item)
         },
         // 用来接收调用接口返回的数据
         search() {
