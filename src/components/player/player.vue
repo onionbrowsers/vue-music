@@ -27,7 +27,7 @@
                         </div>
                         <!-- cd下歌词dom -->
                         <div class="playing-lyric-wrapper">
-                            <div class="playing-lyri">
+                            <div class="playing-lyric">
                                 {{playingLyric}}
                             </div>
                         </div>
@@ -96,11 +96,12 @@
                         <i @click.stop.prevent="togglePlaying" class="icon-mini" :class="miniIcon"></i>
                     </progress-circle>
                 </div>
-                <div class="control">
+                <div class="control" @click.stop="showPlaylist">
                     <i class="icon-playlist"></i>
                 </div>
             </div>
         </transition>
+        <playlist ref="playlist"></playlist>
         <!-- 内置播放器三个内置函数，canplay代表歌曲已经加载完成，error为报错，timeupdate为获取当前歌曲播放时间 -->
         <audio
             ref="audio"
@@ -124,6 +125,7 @@ import {playMode} from 'common/js/config'
 import {shuffle} from 'common/js/util'
 import Lyric from 'lyric-parser'
 import scroll from '@/base/scroll/scroll'
+import playlist from '@/components/playlist/playlist'
 
 const transform = prefixStyle('transform')
 const transitionDuration = prefixStyle('transitionDuration')
@@ -132,7 +134,8 @@ export default {
     components: {
         progressBar,
         progressCircle,
-        scroll
+        scroll,
+        playlist
     },
     data() {
         return {
@@ -209,6 +212,10 @@ export default {
         this.touch = {}
     },
     methods: {
+        // 点击列表图标时，调用子组件方法展示列表
+        showPlaylist() {
+            this.$refs.playlist.show()
+        },
         // 退出全屏
         back() {
             this.setFullScreen(false)

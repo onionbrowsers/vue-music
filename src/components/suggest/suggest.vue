@@ -70,6 +70,10 @@ export default {
         }
     },
     methods: {
+        // 暴露scroll的refresh供父级刷新
+        refresh() {
+            this.$refs.suggest.refresh()
+        },
         // 监听滚动前事件
         listScroll() {
             this.$emit('listScroll')

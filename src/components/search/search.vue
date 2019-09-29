@@ -3,30 +3,32 @@
         <div class="search-box-wrapper">
             <search-box ref="searchBox" @query='onQueryChange'></search-box>
         </div>
-        <div class="shortcut-wrapper" v-show="!query">
-            <div class="shortcut">
-                <div class="hot-key">
-                    <h1 class="title">热门搜索</h1>
-                    <ul v-show="hotKey.length">
-                        <li @click="addQuery(item.k)" class="item" v-for="(item, index) in hotKey" :key="index">
-                            <span>{{item.k}}</span>
-                        </li>
-                    </ul>
+        <div ref="shortCutWrapper" class="shortcut-wrapper" v-show="!query">
+            <scroll class="shortcut" ref="shortCut" :data='shortCut'>
+                <div>
+                    <div class="hot-key">
+                        <h1 class="title">热门搜索</h1>
+                        <ul v-show="hotKey.length">
+                            <li @click="addQuery(item.k)" class="item" v-for="(item, index) in hotKey" :key="index">
+                                <span>{{item.k}}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- 历史数据列表展示 -->
+                    <div class="search-history" v-show="searchHistory.length">
+                        <h1 class="title">
+                            <span class="text">搜索历史</span>
+                            <span class="clear" @click="showConfirm">
+                                <i class="icon-clear"></i>
+                            </span>
+                        </h1>
+                        <searchList @delete='deleteOne' @select='addQuery' :searches='searchHistory'></searchList>
+                    </div>
                 </div>
-                <!-- 历史数据列表展示 -->
-                <div class="search-history" v-show="searchHistory.length">
-                    <h1 class="title">
-                        <span class="text">搜索历史</span>
-                        <span class="clear" @click="showConfirm">
-                            <i class="icon-clear"></i>
-                        </span>
-                    </h1>
-                    <searchList @delete='deleteOne' @select='addQuery' :searches='searchHistory'></searchList>
-                </div>
-            </div>
+            </scroll>
         </div>
-        <div class="search-result" v-show="query">
-            <suggest @select="saveSearch" @listScroll='blurInput' :query='query'></suggest>
+        <div ref="searchResult" class="search-result" v-show="query">
+            <suggest ref="suggest" @select="saveSearch" @listScroll='blurInput' :query='query'></suggest>
         </div>
         <confirm @confirm='clearSearchHistory' ref="confirm" text='是否清空搜索历史记录'></confirm>
         <router-view></router-view>
@@ -40,13 +42,17 @@ import suggest from '@/components/suggest/suggest'
 import {getHotKey} from '@/api/search'
 import {ERR_OK} from '@/api/config'
 import {mapActions, mapGetters} from 'vuex'
+import scroll from '@/base/scroll/scroll'
+import {playlistMixin} from 'common/js/mixin'
 
 export default {
+    mixins: [playlistMixin],
     components: {
         searchBox,
         suggest,
         searchList,
-        confirm
+        confirm,
+        scroll
     },
     data() {
         return {
@@ -55,14 +61,35 @@ export default {
         }
     },
     computed: {
+        shortCut() {
+            return this.hotKey.concat(this.searchHistory)
+        },
         ...mapGetters([
             'searchHistory'
         ])
+    },
+    watch: {
+        // 当搜索框里改变时，如果清空，重新刷新滚动组件
+        query(newQuery) {
+            if (!newQuery) {
+                setTimeout(() => {
+                    this.$refs.shortCut.refresh()
+                }, 20)
+            }
+        }
     },
     created() {
         this._getHotkey()
     },
     methods: {
+        // 当底部有mini播放器时，将bottom设为60露出底层的数据
+        handlePlaylist(playlist) {
+            const bottom = playlist.length > 0 ? '60px' : 0
+            this.$refs.shortCutWrapper.style.bottom = bottom
+            this.$refs.shortCut.refresh()
+            this.$refs.searchResult.style.bottom = bottom
+            this.$refs.suggest.refresh()
+        },
         // 获取热门搜索关键词
         _getHotkey() {
             getHotKey().then(res => {
