@@ -32,6 +32,11 @@ export default {
         beforeScroll: {
             type: Boolean,
             default: false
+        },
+        // scroll组件延迟刷新时间，为了兼容transition-group动画的100ms时间
+        refreshDelay: {
+            type: Number,
+            default: 20
         }
     },
     mounted() {
@@ -96,7 +101,7 @@ export default {
         data() {
             setTimeout(() => {
                 this.refresh()
-            }, 20)
+            }, this.refreshDelay)
         }
     }
 }

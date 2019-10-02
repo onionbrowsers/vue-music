@@ -115,22 +115,23 @@
 </template>
 
 <script>
-import {mapGetters, mapMutations} from 'vuex'
+import {mapGetters, mapMutations, mapActions} from 'vuex'
 // 用js动态写aniamtion的库
 import animations from 'create-keyframe-animation'
 import {prefixStyle} from 'common/js/dom'
 import progressBar from '@/base/progress-bar/progress-bar'
 import progressCircle from '@/base/progress-circle/progress-circle'
 import {playMode} from 'common/js/config'
-import {shuffle} from 'common/js/util'
 import Lyric from 'lyric-parser'
 import scroll from '@/base/scroll/scroll'
 import playlist from '@/components/playlist/playlist'
+import {playerMixin} from 'common/js/mixin'
 
 const transform = prefixStyle('transform')
 const transitionDuration = prefixStyle('transitionDuration')
 
 export default {
+    mixins: [playerMixin],
     components: {
         progressBar,
         progressCircle,
@@ -172,25 +173,17 @@ export default {
         percent() {
             return this.currentTime / this.currentSong.duration
         },
-        // 改变播放模式的图标
-        iconMode() {
-            return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
-        },
         ...mapGetters([
             'fullScreen',
-            'playList',
-            'currentSong',
             'playing',
-            'currentIndex',
-            'mode',
-            'sequenceList'
+            'currentIndex'
         ])
     },
     watch: {
         // 监听当前歌曲，当歌曲改变时，播放歌曲
         currentSong(newSong, oldSong) {
             // 如果切换歌曲后与当前歌曲是同一首歌曲，就直接返回，不触发重新播放
-            if (newSong.id === oldSong.id) return
+            if (!newSong.id || newSong.id === oldSong.id) return
             if (this.currentLyric) {
                 this.currentLyric.stop()
             }
@@ -206,6 +199,14 @@ export default {
             this.$nextTick(() => {
                 newPlaying ? audio.play() : audio.pause()
             })
+        },
+        // 防止songReady一直false情况发生，无法点击上下首切换
+        songReady(newSongReady) {
+            setTimeout(() => {
+                if (!this.songReady) {
+                    this.songReady = true
+                }
+            }, 3000)
         }
     },
     created() {
@@ -314,6 +315,7 @@ export default {
         // audio内置函数，判断是否加载完成
         ready() {
             this.songReady = true
+            this.savePlayHistory(this.currentSong)
         },
         // 防止报错后也无法点击按钮
         error() {
@@ -330,7 +332,7 @@ export default {
             const second = this._pad(interVal % 60)
             return `${minute}:${second}`
         },
-        // 子组件出发时间，通知父组件进度条情况
+        // 子组件触发事件，通知父组件进度条情况
         onProgressBarChange(percent) {
             const currentTime = this.currentSong.duration * percent
             this.$refs.audio.currentTime = this.currentSong.duration * percent
@@ -341,20 +343,6 @@ export default {
             if (this.currentLyric) {
                 this.currentLyric.seek(currentTime * 1000)
             }
-        },
-        // 改变播放模式
-        changeMode() {
-            // 取3的余数，来计算当前播放模式
-            const mode = (this.mode + 1) % 3
-            this.setPlayMode(mode)
-            let list = null
-            if (mode === playMode.random) {
-                list = shuffle(this.sequenceList)
-            } else {
-                list = this.sequenceList
-            }
-            this._resetCurrentIndex(list)
-            this.setPlayList(list)
         },
         // audio内置函数，监听歌曲结束
         end() {
@@ -473,13 +461,6 @@ export default {
             }
             return num
         },
-        // 当模式为随机时，要获取到当前歌曲的index并且将state中的index重新赋值，否则改变模式时会触发歌曲切换且重新播放
-        _resetCurrentIndex(list) {
-            let index = list.findIndex((item) => {
-                return item.id === this.currentSong.id
-            })
-            this.setCurrentIndex(index)
-        },
         // 获取animation所需的便宜量
         _getPosAndScale() {
             const targetWidth = 40
@@ -497,12 +478,9 @@ export default {
             }
         },
         ...mapMutations({
-            setFullScreen: 'SET_FULL_SCREEN',
-            setPlayingState: 'SET_PLAYING_STATE',
-            setCurrentIndex: 'SET_CURRENT_INDEX',
-            setPlayMode: 'SET_PLAY_MODE',
-            setPlayList: 'SET_PLAYLIST'
-        })
+            setFullScreen: 'SET_FULL_SCREEN'
+        }),
+        ...mapActions(['savePlayHistory'])
     }
 }
 </script>

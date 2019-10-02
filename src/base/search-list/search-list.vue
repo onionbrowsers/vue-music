@@ -1,14 +1,14 @@
 <template>
     <!-- 搜索历史展示组件 -->
     <div class="search-list" v-show="searches.length">
-        <ul>
-            <li @click="selectItem(item)" class="search-item" v-for="(item,index) in searches" :key="index">
+        <transition-group name="list" tag="ul">
+            <li @click="selectItem(item)" class="search-item" v-for="item in searches" :key="item">
                 <span class="text">{{item}}</span>
                 <span class="icon" @click.stop="deleteOne(item)">
                     <span class="icon-delete"></span>
                 </span>
             </li>
-        </ul>
+        </transition-group>
     </div>
 </template>
 
@@ -41,6 +41,11 @@ export default {
             display flex
             align-items center
             height 40px
+            overflow hidden
+            &.list-enter-ative, &.list-leave-active
+                transition all 0.4s
+            &.list-enter, &.list-leave-to
+                height 0
             .text
                 flex 1
                 color $color-text-l

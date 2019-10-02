@@ -6,6 +6,9 @@ const SEARCH_KEY = '__search__'
 // 搜索历史最多存储数据
 const SEACH_MAX_LENGTH = 15
 
+const PLAY_KEY = '__play__'
+const PLAY_MAX_LENGTH = 100
+
 // 在搜索历史中插入一条数据
 function insertArray(arr, val, compare, maxLen) {
     // 四个参数为，要插入的数组，插入值，对比函数，最大长度,因为直接操作原数组，所以不需要return出去
@@ -62,5 +65,26 @@ export function deleteSearch(query) {
 // 清空历史数据
 export function clearSearch() {
     storage.remove(SEARCH_KEY)
+    return []
+}
+
+// 保存播放过的歌曲记录
+export function savePlay(song) {
+    // 保存到localStorage中
+    let songs = storage.get(PLAY_KEY, [])
+    insertArray(songs, song, (item) => {
+        return item.id === song.id
+    }, PLAY_MAX_LENGTH)
+    storage.set(PLAY_KEY, songs)
+    return songs
+}
+
+// 下方所有函数作用与搜索历史一样
+export function loadPlay() {
+    return storage.get(PLAY_KEY, [])
+}
+
+export function clearPlay() {
+    storage.remove(PLAY_KEY)
     return []
 }

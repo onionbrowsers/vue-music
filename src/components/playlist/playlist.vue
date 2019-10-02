@@ -5,29 +5,29 @@
             <div class="list-wrapper" @click.stop>
                 <div class="list-header">
                     <h1 class="title">
-                        <i class="icon"></i>
-                        <span class="text"></span>
-                        <span class="clear">
+                        <i class="icon" :class="iconMode" @click="changeMode"></i>
+                        <span class="text">{{modeText}}</span>
+                        <span class="clear" @click="showConfirm">
                             <i class="icon-clear"></i>
                         </span>
                     </h1>
                 </div>
-                <scroll ref="listContent" class="list-content" :data='sequenceList'>
-                    <ul>
-                        <li @click="selectItem(item, index)" ref="listItem" class="item" v-for="(item,index) in sequenceList" :key="index">
+                <scroll ref="listContent" class="list-content" :refreshDelay='100' :data='sequenceList'>
+                    <transition-group name='list' tag="ul">
+                        <li :key="item.id" @click="selectItem(item, index)" ref="listItem" class="item" v-for="(item,index) in sequenceList">
                             <i class="current" :class="getCurrentIcon(item)"></i>
                             <span class="text">{{item.name}}</span>
                             <span class="like">
                                 <i class="icon-not-favorite"></i>
                             </span>
-                            <span class="delete">
+                            <span class="delete" @click.stop="deleteOne(item)">
                                 <i class="icon-delete"></i>
                             </span>
                         </li>
-                    </ul>
+                    </transition-group>
                 </scroll>
                 <div class="list-operate">
-                    <div class="add">
+                    <div class="add" @click="addSong">
                         <i class="icon-add"></i>
                         <span class="text">添加歌曲到队列</span>
                     </div>
@@ -36,18 +36,26 @@
                     <span>关闭</span>
                 </div>
             </div>
+            <confirm ref="confirm" @confirm='confirmClear' text='是否清空播放列表'></confirm>
+            <add-song ref="addSong"></add-song>
         </div>
     </transition>
 </template>
 
 <script>
-import {mapGetters, mapMutations} from 'vuex'
+import {mapActions} from 'vuex'
 import scroll from '@/base/scroll/scroll'
 import {playMode} from 'common/js/config'
+import confirm from '@/base/confirm/confirm'
+import {playerMixin} from 'common/js/mixin'
+import addSong from '../add-song/add-song'
 
 export default {
+    mixins: [playerMixin],
     components: {
-        scroll
+        scroll,
+        confirm,
+        addSong
     },
     data() {
         return {
@@ -55,7 +63,10 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(['sequenceList', 'currentSong', 'playlist'])
+        // 播放列表文字展示
+        modeText() {
+            return this.mode === playMode.sequence ? '顺序播放' : this.mode === playMode.random ? '随机播放' : '单曲循环'
+        }
     },
     watch: {
         // 监听当前歌曲，滚动到播放列当前歌曲的位置
@@ -65,6 +76,10 @@ export default {
         }
     },
     methods: {
+        // 展示添加歌曲到列表页面
+        addSong() {
+            this.$refs.addSong.show()
+        },
         // 展示列表
         show() {
             this.showFlag = true
@@ -86,7 +101,7 @@ export default {
         // 点击选择某首歌曲时，改变当前index从而改变currentSong和播放状态
         selectItem(item, index) {
             if (this.mode === playMode.random) {
-                index = this.playlist.findIndex((song) => {
+                index = this.playList.findIndex((song) => {
                     return song.id === item.id
                 })
             }
@@ -98,12 +113,24 @@ export default {
             const index = this.sequenceList.findIndex(song => {
                 return song.id === current.id
             })
-            this.$refs.listContent.scrollToElement(this.$refs.listItem[index])
+            this.$nextTick(() => {
+                this.$refs.listContent.scrollToElement(this.$refs.listItem[index])
+            })
         },
-        ...mapMutations({
-            setCurrentIndex: 'SET_CURRENT_INDEX',
-            setPlayingState: 'SET_PLAYING_STATE'
-        })
+        deleteOne(item) {
+            this.deleteSong(item)
+            if (!this.playList.length) {
+                this.hide()
+            }
+        },
+        showConfirm() {
+            this.$refs.confirm.show()
+        },
+        confirmClear() {
+            this.deleteSongList()
+            this.hide()
+        },
+        ...mapActions(['deleteSong', 'deleteSongList'])
     }
 }
 </script>

@@ -4,7 +4,7 @@
             <search-box ref="searchBox" @query='onQueryChange'></search-box>
         </div>
         <div ref="shortCutWrapper" class="shortcut-wrapper" v-show="!query">
-            <scroll class="shortcut" ref="shortCut" :data='shortCut'>
+            <scroll :refreshDelay='100' class="shortcut" ref="shortCut" :data='shortCut'>
                 <div>
                     <div class="hot-key">
                         <h1 class="title">热门搜索</h1>
@@ -41,12 +41,12 @@ import searchList from '@/base/search-list/search-list'
 import suggest from '@/components/suggest/suggest'
 import {getHotKey} from '@/api/search'
 import {ERR_OK} from '@/api/config'
-import {mapActions, mapGetters} from 'vuex'
+import {mapActions} from 'vuex'
 import scroll from '@/base/scroll/scroll'
-import {playlistMixin} from 'common/js/mixin'
+import {playlistMixin, searchMixin} from 'common/js/mixin'
 
 export default {
-    mixins: [playlistMixin],
+    mixins: [playlistMixin, searchMixin],
     components: {
         searchBox,
         suggest,
@@ -56,17 +56,13 @@ export default {
     },
     data() {
         return {
-            hotKey: [],
-            query: ''
+            hotKey: []
         }
     },
     computed: {
         shortCut() {
             return this.hotKey.concat(this.searchHistory)
-        },
-        ...mapGetters([
-            'searchHistory'
-        ])
+        }
     },
     watch: {
         // 当搜索框里改变时，如果清空，重新刷新滚动组件
@@ -98,29 +94,10 @@ export default {
                 }
             })
         },
-        // 调用子组件设置点击热门关键词的文本，传入到input中
-        addQuery(query) {
-            this.$refs.searchBox.setQuery(query)
-        },
-        // 接受改变的query值，传给suggest组件，来调用接口
-        onQueryChange(query) {
-            this.query = query
-        },
-        // 当监听到子组件事件后，调用子组件方法，收起键盘
-        blurInput() {
-            this.$refs.searchBox.blur()
-        },
-        // 调用Action派发mutation来改变显示的数据
-        saveSearch() {
-            this.saveSearchHistory(this.query)
-        },
-        deleteOne(item) {
-            this.delectSearchHistory(item)
-        },
         showConfirm() {
             this.$refs.confirm.show()
         },
-        ...mapActions(['saveSearchHistory', 'delectSearchHistory', 'clearSearchHistory'])
+        ...mapActions(['clearSearchHistory'])
     }
 }
 </script>
