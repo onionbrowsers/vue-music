@@ -74,7 +74,7 @@
                             <i @click="next" class="icon-next"></i>
                         </div>
                         <div class="icon i-right">
-                            <i class="icon icon-not-favorite"></i>
+                            <i class="icon" @click="toggleFavortieIcon(currentSong)" :class="getFavoriteCls(currentSong)"></i>
                         </div>
                     </div>
                 </div>
@@ -185,9 +185,13 @@ export default {
             // 如果切换歌曲后与当前歌曲是同一首歌曲，就直接返回，不触发重新播放
             if (!newSong.id || newSong.id === oldSong.id) return
             if (this.currentLyric) {
+                // 初始化
                 this.currentLyric.stop()
+                this.currentTime = 0
+                this.playingLyric = ''
+                this.currentLineNum = 0
             }
-            setTimeout(() => {
+            this.timer = setTimeout(() => {
                 this.$refs.audio.play()
                 // 获取歌词
                 this.getCurLyric()
@@ -356,6 +360,7 @@ export default {
         loop() {
             this.$refs.audio.currentTime = 0
             this.$refs.audio.play()
+            this.setPlayingState(true)
             if (this.currentLyric) {
                 this.currentLyric.seek(0)
             }
@@ -363,6 +368,8 @@ export default {
         // 获取歌词
         getCurLyric() {
             this.currentSong.getCurLyric().then(res => {
+                // 快速切换歌手时会出现歌词跳动情况，判断不是当前歌曲的歌词的话，直接return出去
+                if (this.currentSong.lyric !== res) return
                 // Lyric为第三方库，用来格式化歌词
                 this.currentLyric = new Lyric(res, this.handleLyric)
                 // 如果当前是播放，歌词随之一同播放

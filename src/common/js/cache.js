@@ -9,6 +9,9 @@ const SEACH_MAX_LENGTH = 15
 const PLAY_KEY = '__play__'
 const PLAY_MAX_LENGTH = 100
 
+const FAVORITE_KEY = '__favorite__'
+const FAVORITE_MAX_LENGTH = 100
+
 // 在搜索历史中插入一条数据
 function insertArray(arr, val, compare, maxLen) {
     // 四个参数为，要插入的数组，插入值，对比函数，最大长度,因为直接操作原数组，所以不需要return出去
@@ -87,4 +90,27 @@ export function loadPlay() {
 export function clearPlay() {
     storage.remove(PLAY_KEY)
     return []
+}
+
+// 收藏喜欢歌曲，逻辑同上
+export function saveFavorite(song) {
+    let songs = storage.get(FAVORITE_KEY, [])
+    insertArray(songs, song, (item) => {
+        return song.id === item.id
+    }, FAVORITE_MAX_LENGTH)
+    storage.set(FAVORITE_KEY, songs)
+    return songs
+}
+
+export function deleteFavorite(song) {
+    let songs = storage.get(FAVORITE_KEY, [])
+    deleteFromArray(songs, (item) => {
+        return item.id === song.id
+    })
+    storage.set(FAVORITE_KEY, songs)
+    return songs
+}
+
+export function loadFavortie() {
+    return storage.get(FAVORITE_KEY, [])
 }

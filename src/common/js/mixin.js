@@ -35,7 +35,7 @@ export const playerMixin = {
         iconMode() {
             return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
         },
-        ...mapGetters(['sequenceList', 'currentSong', 'playList', 'mode'])
+        ...mapGetters(['sequenceList', 'currentSong', 'playList', 'mode', 'favoriteList'])
     },
     methods: {
         // 当模式为随机时，要获取到当前歌曲的index并且将state中的index重新赋值，否则改变模式时会触发歌曲切换且重新播放
@@ -59,12 +59,35 @@ export const playerMixin = {
             this._resetCurrentIndex(list)
             this.setPlayList(list)
         },
+        // 点击收藏图标时，根据收藏情况判断从列表删除还是加入
+        toggleFavortieIcon(song) {
+            if (this.isFavortie(song)) {
+                this.deleteFavoriteList(song)
+            } else {
+                this.saveFavoriteList(song)
+            }
+        },
+        // 改变歌曲的收藏图标
+        getFavoriteCls(song) {
+            if (this.isFavortie(song)) {
+                return 'icon-favorite'
+            }
+            return 'icon-not-favorite'
+        },
+        // 判断当前收藏列表内是否已经有该歌曲
+        isFavortie(song) {
+            const index = this.favoriteList.findIndex(item => {
+                return item.id === song.id
+            })
+            return index > -1
+        },
         ...mapMutations({
             setPlayingState: 'SET_PLAYING_STATE',
             setCurrentIndex: 'SET_CURRENT_INDEX',
             setPlayMode: 'SET_PLAY_MODE',
             setPlayList: 'SET_PLAYLIST'
-        })
+        }),
+        ...mapActions(['saveFavoriteList', 'deleteFavoriteList'])
     }
 }
 
